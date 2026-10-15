@@ -1,0 +1,44 @@
+log_watcher.settings:
+  type: config_object
+  label: 'Log Watcher Settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enable Log Watcher'
+    severity_levels:
+      type: sequence
+      label: 'Severity levels to monitor'
+      sequence:
+        type: integer
+        label: 'Severity level'
+    email_frequency:
+      type: string
+      label: 'Email digest frequency'
+    email_recipients:
+      type: text
+      label: 'Email recipients (one per line)'
+    send_no_error_digest:
+      type: boolean
+      label: 'Send digest when no errors detected'
+    email_subject_prefix:
+      type: string
+      label: 'Email subject prefix'
+    max_groups_per_email:
+      type: integer
+      label: 'Maximum error groups per email'
+    max_active_groups:
+      type: integer
+      label: 'Maximum active error groups'
+    max_occurrences_per_group:
+      type: integer
+      label: 'Maximum recent occurrences retained per group'
+    retention_days:
+      type: integer
+      label: 'Retention period for active groups (days)'
+    resolved_retention_days:
+      type: integer
+      label: 'Retention period for resolved groups (days)'
+    ignored_retention_days:
+      type: integer
+      label: 'Retention period for ignored groups (days)'
+

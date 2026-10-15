@@ -1,0 +1,65 @@
+services:
+  log_watcher.logger:
+    class: Drupal\log_watcher\Logger\LogWatcherLogger
+    arguments: ['@log_watcher.error_group_service', '@log_watcher.fingerprint_service', '@log_watcher.config_service', '@log_watcher.occurrence_service']
+    tags:
+      - { name: logger }
+
+  log_watcher.fingerprint_service:
+    class: Drupal\log_watcher\Service\ErrorFingerprintService
+
+  log_watcher.error_group_service:
+    class: Drupal\log_watcher\Service\ErrorGroupService
+    arguments: ['@database', '@log_watcher.fingerprint_service']
+
+  log_watcher.occurrence_service:
+    class: Drupal\log_watcher\Service\OccurrenceService
+    arguments: ['@database']
+
+  log_watcher.notification_service:
+    class: Drupal\log_watcher\Service\NotificationService
+    arguments: ['@log_watcher.config_service', '@log_watcher.error_group_repository', '@log_watcher.occurrence_repository', '@log_watcher.digest_builder', '@log_watcher.digest_state_repository', '@logger.channel.system', '@plugin.manager.mail']
+
+  log_watcher.digest_builder:
+    class: Drupal\log_watcher\Service\DigestBuilder
+    arguments: ['@log_watcher.config_service', '@log_watcher.error_group_repository', '@date.formatter']
+
+  log_watcher.maintenance_service:
+    class: Drupal\log_watcher\Service\MaintenanceService
+    arguments: ['@database', '@log_watcher.config_service', '@log_watcher.notification_service', '@logger.channel.system']
+
+  log_watcher.config_service:
+    class: Drupal\log_watcher\Service\EmailValidatedConfigService
+    arguments: ['@config.factory', '@email.validator']
+
+  log_watcher.error_group_repository:
+    class: Drupal\log_watcher\Repository\ErrorGroupRepository
+    arguments: ['@database']
+
+  log_watcher.occurrence_repository:
+    class: Drupal\log_watcher\Repository\OccurrenceRepository
+    arguments: ['@database']
+
+  log_watcher.digest_state_repository:
+    class: Drupal\log_watcher\Repository\DigestStateRepository
+    arguments: ['@database']
+
+  log_watcher.drush_commands:
+    class: Drupal\log_watcher\Drush\Commands\LogWatcherCommands
+    arguments:
+      - '@database'
+      - '@log_watcher.config_service'
+      - '@log_watcher.maintenance_service'
+      - '@log_watcher.notification_service'
+      - '@log_watcher.error_group_repository'
+    tags:
+      - { name: drush.command_handler }
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,16 @@
+'administer log watcher':
+  title: 'Administer Log Watcher configuration'
+  description: 'Configure Log Watcher monitoring, email, and retention settings.'
+
+'view log watcher reports':
+  title: 'View Log Watcher reports'
+  description: 'Access the Log Watcher dashboard and error group details.'
+
+'manage log watcher groups':
+  title: 'Manage error groups'
+  description: 'Resolve, reopen, ignore, or modify error groups.'
+
+'delete log watcher data':
+  title: 'Delete Log Watcher data'
+  description: 'Clear error groups and perform data maintenance.'
+

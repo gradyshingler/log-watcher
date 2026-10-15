@@ -1,0 +1,352 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Log Watcher module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function log_watcher_schema() {
+  $schema = [];
+
+  // Error groups table - main aggregation of similar errors.
+  $schema['log_watcher_error_groups'] = [
+    'description' => 'Aggregated error groups for monitoring.',
+    'fields' => [
+      'id' => [
+        'description' => 'Unique error group ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'fingerprint' => [
+        'description' => 'Deterministic hash identifying similar errors.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ],
+      'channel' => [
+        'description' => 'Drupal logger channel/type.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ],
+      'severity' => [
+        'description' => 'RFC 5424 severity level (0-7).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ],
+      'status' => [
+        'description' => 'Status of the error group: new, active, resolved, ignored.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'new',
+      ],
+      'message' => [
+        'description' => 'Normalized message or error title.',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+      ],
+      'occurrence_count' => [
+        'description' => 'Total count of occurrences in this group.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'first_seen' => [
+        'description' => 'Timestamp when this error group was first seen.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'last_seen' => [
+        'description' => 'Timestamp of the most recent occurrence.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'exception_class' => [
+        'description' => 'Exception class name if applicable.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'file' => [
+        'description' => 'Representative file path (without full root).',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'line' => [
+        'description' => 'Representative line number.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'representative_context' => [
+        'description' => 'Serialized context data from a representative occurrence.',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+      ],
+      'representative_uri' => [
+        'description' => 'Request URI from a representative occurrence.',
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => FALSE,
+      ],
+      'representative_referrer' => [
+        'description' => 'HTTP referrer from a representative occurrence.',
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => FALSE,
+      ],
+      'representative_uid' => [
+        'description' => 'Representative user ID when available.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'representative_ip_hash' => [
+        'description' => 'Hash of representative IP for privacy.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'created' => [
+        'description' => 'Timestamp when this group was created.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'updated' => [
+        'description' => 'Timestamp when this group was last updated.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'status_updated' => [
+        'description' => 'Timestamp when status was last changed.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'fingerprint' => ['fingerprint'],
+    ],
+    'indexes' => [
+      'severity_status' => ['severity', 'status'],
+      'channel_severity' => ['channel', 'severity'],
+      'last_seen' => ['last_seen'],
+      'first_seen' => ['first_seen'],
+      'occurrence_count' => ['occurrence_count'],
+      'status' => ['status'],
+    ],
+  ];
+
+  // Bounded recent occurrences table.
+  $schema['log_watcher_occurrences'] = [
+    'description' => 'Recent individual occurrences of error groups (bounded).',
+    'fields' => [
+      'id' => [
+        'description' => 'Unique occurrence ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'group_id' => [
+        'description' => 'Reference to error group.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'watchdog_id' => [
+        'description' => 'Optional reference to watchdog log entry.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'occurred_at' => [
+        'description' => 'Timestamp of this occurrence.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'message' => [
+        'description' => 'Full message from this occurrence.',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'context' => [
+        'description' => 'Serialized context array.',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+      ],
+      'uri' => [
+        'description' => 'Request URI.',
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => FALSE,
+      ],
+      'referrer' => [
+        'description' => 'HTTP referrer.',
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => FALSE,
+      ],
+      'uid' => [
+        'description' => 'User ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'ip_hash' => [
+        'description' => 'Hash of IP for privacy.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'group_id' => ['group_id'],
+      'occurred_at' => ['occurred_at'],
+      'group_occurred' => ['group_id', 'occurred_at'],
+    ],
+    'foreign keys' => [
+      'group_id' => [
+        'table' => 'log_watcher_error_groups',
+        'columns' => ['group_id' => 'id'],
+      ],
+    ],
+  ];
+
+  // Digest send state tracking.
+  $schema['log_watcher_digest_state'] = [
+    'description' => 'Tracks when digests are sent and when next is due.',
+    'fields' => [
+      'id' => [
+        'description' => 'Singleton ID (should be 1).',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'last_sent' => [
+        'description' => 'Timestamp when the last digest was sent.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'last_checked' => [
+        'description' => 'Timestamp of last cron check.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+      'failed_attempts' => [
+        'description' => 'Count of consecutive failed send attempts.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'last_failure_message' => [
+        'description' => 'Last error message if send failed.',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'last_subject' => [
+        'description' => 'Subject of the most recently sent digest email.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'last_body' => [
+        'description' => 'Plain text body of the most recently sent digest email.',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+      ],
+      'last_body_html' => [
+        'description' => 'HTML body of the most recently sent digest email.',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function log_watcher_install() {
+  // Create the initial digest state record.
+  $connection = \Drupal::database();
+  $connection->insert('log_watcher_digest_state')
+    ->fields([
+      'id' => 1,
+      'last_sent' => NULL,
+      'last_checked' => NULL,
+      'failed_attempts' => 0,
+    ])
+    ->execute();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function log_watcher_uninstall() {
+  // Clean up configuration on uninstall.
+  \Drupal::configFactory()->getEditable('log_watcher.settings')->delete();
+}
+
+/**
+ * Add last digest content fields to digest state.
+ */
+function log_watcher_update_10001() {
+  $schema = \Drupal::database()->schema();
+  $table = 'log_watcher_digest_state';
+
+  $fields = [
+    'last_subject' => [
+      'description' => 'Subject of the most recently sent digest email.',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+    ],
+    'last_body' => [
+      'description' => 'Plain text body of the most recently sent digest email.',
+      'type' => 'text',
+      'size' => 'medium',
+      'not null' => FALSE,
+    ],
+    'last_body_html' => [
+      'description' => 'HTML body of the most recently sent digest email.',
+      'type' => 'text',
+      'size' => 'medium',
+      'not null' => FALSE,
+    ],
+  ];
+
+  foreach ($fields as $name => $spec) {
+    if (!$schema->fieldExists($table, $name)) {
+      $schema->addField($table, $name, $spec);
+    }
+  }
+}
+

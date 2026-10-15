@@ -1,0 +1,8 @@
+name: 'Log Watcher'
+description: 'Captures and aggregates important Drupal errors, prevents oversight of critical issues through email digests and administrative reporting.'
+type: module
+core_version_requirement: '^10 || ^11'
+configure: log_watcher.settings
+dependencies:
+  - drupal:system
+package: 'Monitoring'

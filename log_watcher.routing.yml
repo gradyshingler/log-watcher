@@ -1,0 +1,105 @@
+log_watcher.settings:
+  path: '/admin/config/system/log-watcher'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\LogWatcherSettingsForm'
+    _title: 'Log Watcher Settings'
+  requirements:
+    _permission: 'administer log watcher'
+
+log_watcher.dashboard:
+  path: '/admin/reports/log-watcher'
+  defaults:
+    _controller: 'Drupal\log_watcher\Controller\DashboardController::dashboard'
+    _title: 'Log Watcher Report'
+  requirements:
+    _permission: 'view log watcher reports'
+
+log_watcher.dashboard_resolved:
+  path: '/admin/reports/log-watcher/resolved'
+  defaults:
+    _controller: 'Drupal\log_watcher\Controller\DashboardController::dashboard'
+    _title: 'Resolved Error Groups'
+    status: 'resolved'
+  requirements:
+    _permission: 'view log watcher reports'
+
+log_watcher.dashboard_ignored:
+  path: '/admin/reports/log-watcher/ignored'
+  defaults:
+    _controller: 'Drupal\log_watcher\Controller\DashboardController::dashboard'
+    _title: 'Ignored Error Groups'
+    status: 'ignored'
+  requirements:
+    _permission: 'view log watcher reports'
+
+log_watcher.status_delete_all:
+  path: '/admin/reports/log-watcher/{status}/delete-all'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\DeleteGroupsByStatusForm'
+    _title: 'Delete Groups'
+  requirements:
+    _permission: 'delete log watcher data'
+    status: 'resolved|ignored'
+
+log_watcher.group_detail:
+  path: '/admin/reports/log-watcher/group/{error_group_id}'
+  defaults:
+    _controller: 'Drupal\log_watcher\Controller\GroupDetailController::detail'
+    _title: 'Error Group Details'
+  requirements:
+    _permission: 'view log watcher reports'
+    error_group_id: '\d+'
+
+log_watcher.group_resolve:
+  path: '/admin/reports/log-watcher/group/{error_group_id}/resolve'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\ResolveGroupForm'
+    _title: 'Resolve Error Group'
+  requirements:
+    _permission: 'manage log watcher groups'
+    error_group_id: '\d+'
+
+log_watcher.group_reopen:
+  path: '/admin/reports/log-watcher/group/{error_group_id}/reopen'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\ReopenGroupForm'
+    _title: 'Reopen Error Group'
+  requirements:
+    _permission: 'manage log watcher groups'
+    error_group_id: '\d+'
+
+log_watcher.group_ignore:
+  path: '/admin/reports/log-watcher/group/{error_group_id}/ignore'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\IgnoreGroupForm'
+    _title: 'Ignore Error Group'
+  requirements:
+    _permission: 'manage log watcher groups'
+    error_group_id: '\d+'
+
+log_watcher.group_unignore:
+  path: '/admin/reports/log-watcher/group/{error_group_id}/unignore'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\UnignoreGroupForm'
+    _title: 'Stop Ignoring Error Group'
+  requirements:
+    _permission: 'manage log watcher groups'
+    error_group_id: '\d+'
+
+log_watcher.group_delete:
+  path: '/admin/reports/log-watcher/group/{error_group_id}/delete'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\DeleteGroupForm'
+    _title: 'Delete Error Group'
+  requirements:
+    _permission: 'delete log watcher data'
+    error_group_id: '\d+'
+
+log_watcher.maintenance:
+  path: '/admin/reports/log-watcher/maintenance'
+  defaults:
+    _form: 'Drupal\log_watcher\Form\MaintenanceForm'
+    _title: 'Log Watcher Maintenance'
+  requirements:
+    _permission: 'delete log watcher data'
+

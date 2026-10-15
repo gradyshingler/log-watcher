@@ -1,0 +1,29 @@
+log_watcher.dashboard:
+  route_name: log_watcher.dashboard
+  title: 'Summary'
+  base_route: log_watcher.dashboard
+
+log_watcher.dashboard_resolved:
+  route_name: log_watcher.dashboard_resolved
+  title: 'Resolved'
+  base_route: log_watcher.dashboard
+  weight: 5
+
+log_watcher.dashboard_ignored:
+  route_name: log_watcher.dashboard_ignored
+  title: 'Ignored'
+  base_route: log_watcher.dashboard
+  weight: 10
+
+log_watcher.settings:
+  route_name: log_watcher.settings
+  title: 'Settings'
+  base_route: log_watcher.dashboard
+  weight: 15
+
+log_watcher.maintenance:
+  route_name: log_watcher.maintenance
+  title: 'Maintenance'
+  base_route: log_watcher.dashboard
+  weight: 20
+

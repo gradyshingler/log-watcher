@@ -1,0 +1,25 @@
+{
+    "name": "gradyshingler/log_watcher",
+    "description": "Drupal module for aggregating, reviewing, and digesting important log errors.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1"
+    },
+    "conflict": {
+        "drupal/core": "<10.3 || >=12",
+        "drupal/core-recommended": "<10.3 || >=12"
+    },
+    "suggest": {
+        "drupal/core-recommended": "Install from a Drupal 10.3+ or 11.x site managed by Composer.",
+        "drush/drush": "Provides the optional Log Watcher Drush commands."
+    },
+    "autoload": {
+        "psr-4": {
+            "Drupal\\log_watcher\\": "src/"
+        }
+    },
+    "extra": {
+        "installer-name": "log_watcher"
+    }
+}

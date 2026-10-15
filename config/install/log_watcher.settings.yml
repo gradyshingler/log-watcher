@@ -1,0 +1,17 @@
+enabled: true
+severity_levels:
+  - 3
+  - 2
+  - 1
+  - 0
+email_frequency: 'weekly'
+email_recipients: ''
+send_no_error_digest: true
+email_subject_prefix: 'Log Watcher Report'
+max_groups_per_email: 10
+max_active_groups: 1000
+max_occurrences_per_group: 50
+retention_days: 90
+resolved_retention_days: 30
+ignored_retention_days: 14
+

@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Log Watcher module - captures and aggregates important Drupal errors.
+ */
+
+/**
+ * Implements hook_cron().
+ */
+function log_watcher_cron() {
+  // Process digest scheduling and send if due.
+  /** @var \Drupal\log_watcher\Service\MaintenanceService $maintenance */
+  $maintenance = \Drupal::service('log_watcher.maintenance_service');
+  try {
+    $maintenance->processDigestSchedule();
+  } catch (\Exception $e) {
+    \Drupal::logger('log_watcher')->error('Error processing digest schedule: @message', [
+      '@message' => $e->getMessage(),
+    ]);
+  }
+
+  // Run maintenance/cleanup.
+  try {
+    $maintenance->cleanupOldData();
+  } catch (\Exception $e) {
+    \Drupal::logger('log_watcher')->error('Error during cleanup: @message', [
+      '@message' => $e->getMessage(),
+    ]);
+  }
+}
+
+/**
+ * Implements hook_modules_installed().
+ */
+function log_watcher_modules_installed(array $modules) {
+  if (in_array('log_watcher', $modules)) {
+    // Initialize default configuration.
+    $config = \Drupal::configFactory()->getEditable('log_watcher.settings');
+    if ($config->isNew()) {
+      $config->set('enabled', TRUE)
+        ->set('severity_levels', [
+          \Psr\Log\LogLevel::ERROR => 3,
+          \Psr\Log\LogLevel::CRITICAL => 2,
+          \Psr\Log\LogLevel::ALERT => 1,
+          \Psr\Log\LogLevel::EMERGENCY => 0,
+        ])
+        ->set('email_frequency', 'weekly')
+        ->set('email_recipients', '')
+        ->set('send_no_error_digest', TRUE)
+        ->set('email_subject_prefix', 'Log Watcher Report')
+        ->set('max_groups_per_email', 10)
+        ->set('max_active_groups', 1000)
+        ->set('max_occurrences_per_group', 50)
+        ->set('retention_days', 90)
+        ->set('resolved_retention_days', 30)
+        ->set('ignored_retention_days', 14)
+        ->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function log_watcher_mail($key, &$message, $params) {
+  if ($key === 'digest') {
+    $message['subject'] = $params['subject'];
+    $message['body'][] = $params['body'];
+    // Mark as multipart if HTML version is available.
+    if (!empty($params['body_html'])) {
+      $message['headers']['Content-Type'] = 'text/plain; charset=UTF-8';
+    }
+  }
+}
+
+
+

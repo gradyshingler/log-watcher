@@ -1,0 +1,12 @@
+log_watcher.settings:
+  title: 'Log Watcher'
+  route_name: log_watcher.settings
+  parent: system.admin_config_system
+  weight: 100
+
+log_watcher.dashboard:
+  title: 'Log Watcher'
+  route_name: log_watcher.dashboard
+  parent: system.admin_reports
+  weight: 50
+

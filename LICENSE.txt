@@ -1,0 +1,10 @@
+Log Watcher
+Copyright (C) 2026 Grady Shingler
+
+This project is licensed under the GNU General Public License,
+version 2 or (at your option) any later version.
+
+SPDX-License-Identifier: GPL-2.0-or-later
+
+For the full license text, see:
+https://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html
