@@ -50,7 +50,7 @@ class LogWatcherAdminTest extends BrowserTestBase {
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('/admin/config/system/log-watcher');
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->fieldExists('monitoring[enabled]');
+    $this->assertSession()->fieldExists('enabled');
   }
 
   /**
@@ -62,7 +62,7 @@ class LogWatcherAdminTest extends BrowserTestBase {
 
     // Try to enable without selecting any severity.
     $this->submitForm([
-      'monitoring[enabled]' => TRUE,
+      'enabled' => TRUE,
       'monitoring[severity_levels][]' => [],
       'email[email_recipients]' => 'test@example.com',
     ], 'Save configuration');
@@ -78,7 +78,7 @@ class LogWatcherAdminTest extends BrowserTestBase {
     $this->drupalGet('/admin/config/system/log-watcher');
 
     $this->submitForm([
-      'monitoring[enabled]' => TRUE,
+      'enabled' => TRUE,
       'monitoring[severity_levels][3]' => TRUE,
       'email[email_recipients]' => 'invalid-email',
     ], 'Save configuration');
@@ -115,4 +115,3 @@ class LogWatcherAdminTest extends BrowserTestBase {
   }
 
 }
-

@@ -79,6 +79,8 @@ class LogWatcherSettingsForm extends ConfigFormBase implements ContainerInjectio
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('log_watcher.settings');
+
+    $form['#attached']['library'][] = 'log_watcher/settings';
     $digest_status = $this->maintenanceService->getDigestStatus();
     $digest_state = $this->digestStateRepository->getState() ?? [];
 
@@ -145,20 +147,48 @@ class LogWatcherSettingsForm extends ConfigFormBase implements ContainerInjectio
     ];
 
     // Enable/disable.
-    $form['monitoring'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Monitoring'),
-      '#open' => TRUE,
-    ];
-
-    $form['monitoring']['enabled'] = [
+    $form['enabled'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable Log Watcher'),
       '#default_value' => $config->get('enabled'),
       '#description' => $this->t('When enabled, Log Watcher will capture and aggregate log events.'),
     ];
 
+    $form['monitoring'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Monitoring'),
+      '#open' => TRUE,
+    ];
+
     // Severity levels.
+    $form['monitoring']['severity_controls'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['log-watcher-severity-controls']],
+      '#weight' => -1,
+    ];
+
+    $form['monitoring']['severity_controls']['select'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#value' => $this->t('Select all'),
+      '#attributes' => [
+        'type' => 'button',
+        'class' => ['button', 'button--small'],
+        'data-log-watcher-severity-action' => 'select',
+      ],
+    ];
+
+    $form['monitoring']['severity_controls']['deselect'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'button',
+      '#value' => $this->t('Deselect all'),
+      '#attributes' => [
+        'type' => 'button',
+        'class' => ['button', 'button--small'],
+        'data-log-watcher-severity-action' => 'deselect',
+      ],
+    ];
+
     $form['monitoring']['severity_levels'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Severity Levels to Monitor'),
@@ -303,7 +333,7 @@ class LogWatcherSettingsForm extends ConfigFormBase implements ContainerInjectio
     }
 
     // Validate that at least one severity is selected if enabled.
-    if ($form_state->getValue(['monitoring', 'enabled'])) {
+    if ($form_state->getValue('enabled')) {
       $severities = $this->normalizeSeveritySelection($form_state->getValue(['monitoring', 'severity_levels']) ?? []);
       if (empty($severities)) {
         $form_state->setErrorByName('monitoring][severity_levels', $this->t('At least one severity level must be selected when Log Watcher is enabled.'));
@@ -338,7 +368,7 @@ class LogWatcherSettingsForm extends ConfigFormBase implements ContainerInjectio
     }
 
     $this->config('log_watcher.settings')
-      ->set('enabled', $form_state->getValue(['monitoring', 'enabled']))
+      ->set('enabled', $form_state->getValue('enabled'))
       ->set('severity_levels', $severities)
       ->set('email_frequency', $form_state->getValue(['email', 'email_frequency']))
       ->set('email_recipients', $recipients_clean)
@@ -453,7 +483,3 @@ class LogWatcherSettingsForm extends ConfigFormBase implements ContainerInjectio
   }
 
 }
-
-
-
-

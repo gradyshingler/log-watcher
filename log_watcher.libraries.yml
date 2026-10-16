@@ -1,0 +1,6 @@
+settings:
+  js:
+    js/settings.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

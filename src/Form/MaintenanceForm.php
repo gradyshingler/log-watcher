@@ -119,7 +119,10 @@ class MaintenanceForm extends FormBase implements ContainerInjectionInterface {
     $form['clear_all']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Clear All Data'),
-      '#name' => 'clear_all',
+      // Keep the button name distinct from the parent container. With #tree
+      // enabled, using the same name would make Form API treat the button
+      // value as the entire clear_all value before setting confirm beneath it.
+      '#name' => 'clear_all_submit',
       '#attributes' => ['class' => ['button--danger']],
       '#states' => [
         'enabled' => [
@@ -157,7 +160,7 @@ class MaintenanceForm extends FormBase implements ContainerInjectionInterface {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Validate clear all confirmation.
     $trigger = $form_state->getTriggeringElement();
-    if ($trigger['#name'] === 'clear_all' && !$form_state->getValue(['clear_all', 'confirm'])) {
+    if ($trigger['#name'] === 'clear_all_submit' && !$form_state->getValue(['clear_all', 'confirm'])) {
       $form_state->setErrorByName('clear_all][confirm', $this->t('You must confirm this action.'));
     }
   }
@@ -179,7 +182,7 @@ class MaintenanceForm extends FormBase implements ContainerInjectionInterface {
         $this->messenger()->addMessage($this->t('Ignored groups cleared.'));
         break;
 
-      case 'clear_all':
+      case 'clear_all_submit':
         $this->clearAllData($this->connection);
         $this->messenger()->addMessage($this->t('All Log Watcher data cleared.'));
         break;
@@ -221,5 +224,4 @@ class MaintenanceForm extends FormBase implements ContainerInjectionInterface {
   }
 
 }
-
 

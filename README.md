@@ -99,8 +99,9 @@ Add your self-hosted Git repository to the consuming project's `composer.json`:
 {
   "repositories": [
     {
+      "name": "log_watcher",
       "type": "vcs",
-      "url": "git@github.com:gradyshingler/log_watcher.git"
+      "url": "https://github.com/gradyshingler/log-watcher.git"
     }
   ]
 }
