@@ -173,8 +173,18 @@ class LogWatcherLogger extends AbstractLogger {
    * @return int
    *   RFC 5424 severity level (0-7).
    */
-  protected function psrLevelToRfc5424(string $psr_level): int {
-    return match(strtolower($psr_level)) {
+  protected function psrLevelToRfc5424($level): int {
+    // Some Drupal logger implementations provide the RFC 5424 numeric
+    // severity directly instead of the PSR-3 level name. Preserve that value
+    // rather than treating it as an unknown level (which defaults to info).
+    if (is_numeric($level)) {
+      $severity = (int) $level;
+      if ($severity >= self::SEVERITY_EMERGENCY && $severity <= self::SEVERITY_DEBUG) {
+        return $severity;
+      }
+    }
+
+    return match(strtolower((string) $level)) {
       LogLevel::EMERGENCY => self::SEVERITY_EMERGENCY,
       LogLevel::ALERT => self::SEVERITY_ALERT,
       LogLevel::CRITICAL => self::SEVERITY_CRITICAL,
@@ -188,7 +198,6 @@ class LogWatcherLogger extends AbstractLogger {
   }
 
 }
-
 
 
 

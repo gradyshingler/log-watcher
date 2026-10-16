@@ -153,7 +153,7 @@ class DashboardController extends ControllerBase implements ContainerInjectionIn
     $build['groups']['filters'] = $this->formBuilder->getForm(DashboardFilterForm::class, $filters, $route_name, $route_params);
 
     // Get groups for display.
-    $groups = $this->repo->getActiveGroups(NULL, $severity, $group_status, 100, 0, $search_filter, $count_order);
+    $groups = $this->repo->getActiveGroups(NULL, $severity, $group_status, 100, 0, $search_filter, $count_order, TRUE);
 
     if (empty($groups)) {
       $empty_message = ($severity !== NULL || $search_filter !== '')
@@ -292,7 +292,6 @@ class DashboardController extends ControllerBase implements ContainerInjectionIn
   }
 
 }
-
 
 
 

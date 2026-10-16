@@ -26,7 +26,7 @@ class ErrorGroupRepository {
   /**
    * Get all active groups for reporting.
    */
-  public function getActiveGroups(?string $channel = NULL, ?int $severity = NULL, string|array|null $status = NULL, int $limit = 100, int $offset = 0, ?string $search_text = NULL, string $count_order = 'DESC'): array {
+  public function getActiveGroups(?string $channel = NULL, ?int $severity = NULL, string|array|null $status = NULL, int $limit = 100, int $offset = 0, ?string $search_text = NULL, string $count_order = 'DESC', bool $prioritize_severity = FALSE): array {
     $query = $this->connection->select('log_watcher_error_groups', 'g')
       ->fields('g');
 
@@ -54,6 +54,13 @@ class ErrorGroupRepository {
     }
 
     $count_order = strtoupper($count_order) === 'ASC' ? 'ASC' : 'DESC';
+
+    if ($prioritize_severity) {
+      // RFC 5424 uses lower numbers for more severe events. Sort severity
+      // before frequency so informational/debug noise cannot displace more
+      // actionable warnings and errors from the report.
+      $query->orderBy('severity', 'ASC');
+    }
 
     $query->orderBy('occurrence_count', $count_order)
       ->orderBy('last_seen', 'DESC');
@@ -277,7 +284,6 @@ class ErrorGroupRepository {
   }
 
 }
-
 
 
 

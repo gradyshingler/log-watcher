@@ -95,7 +95,10 @@ class NotificationService {
       NULL,
       ['new', 'active'],
       $max_groups,
-      0
+      0,
+      NULL,
+      'DESC',
+      TRUE
     );
 
     // If no groups and we're configured to not send empty digests, return.
@@ -167,6 +170,4 @@ class NotificationService {
   }
 
 }
-
-
 

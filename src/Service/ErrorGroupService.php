@@ -139,7 +139,11 @@ class ErrorGroupService {
     array $context,
     int $now
   ): int {
-    $normalized_message = $this->extractTitle($message);
+    // Store a readable representative message when Drupal supplies a
+    // placeholder-based log template (for example, "%type: @message in
+    // %function..."). The original template remains available in each
+    // occurrence's stored context.
+    $normalized_message = $this->extractTitle($this->interpolateMessage($message, $context));
     $exception_class = $this->extractExceptionClass($context);
     $file = $this->extractFile($context);
     $line = $this->extractLine($context);
@@ -206,6 +210,39 @@ class ErrorGroupService {
       $title = substr($title, 0, strpos($title, '. ') + 1);
     }
     return trim($title);
+  }
+
+  /**
+   * Interpolate Drupal/PSR-style placeholders from a log context.
+   *
+   * @param string $message
+   *   The logger message template.
+   * @param array $context
+   *   The logger context values.
+   *
+   * @return string
+   *   The message with scalar context values interpolated.
+   */
+  protected function interpolateMessage(string $message, array $context): string {
+    return preg_replace_callback('/([@%:])([a-zA-Z0-9_]+)\b/', static function (array $matches) use ($context): string {
+      $placeholder = $matches[0];
+      $key = $matches[2];
+      if (array_key_exists($placeholder, $context)) {
+        $value = $context[$placeholder];
+      }
+      elseif (array_key_exists($key, $context)) {
+        $value = $context[$key];
+      }
+      else {
+        return $matches[0];
+      }
+
+      if (is_scalar($value) || $value instanceof \Stringable) {
+        return (string) $value;
+      }
+
+      return $matches[0];
+    }, $message) ?? $message;
   }
 
   /**
@@ -403,7 +440,5 @@ class ErrorGroupService {
   }
 
 }
-
-
 
 
